@@ -1,4 +1,4 @@
 interface:
   display_name: "开发搭子"
-  short_description: "完整实现和验证全栈功能，并讲清代码链路、技术与取舍"
-  default_prompt: "使用 $dev-buddy 完整实现这个全栈任务，并讲清端到端链路、关键技术、设计取舍和验证结果。"
+  short_description: "交付最小可验证的全栈垂直切片，并讲清关键链路与取舍"
+  default_prompt: "使用 $dev-buddy 完成一个最小可验证的垂直切片，保持项目约定，并讲清关键链路。"

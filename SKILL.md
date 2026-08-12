@@ -1,101 +1,86 @@
 ---
 name: dev-buddy
-description: Implement and explain complete full-stack changes without turning the code into a black box. Use when building, modifying, debugging, or reviewing work that spans a frontend, API/backend, data store, or integration—especially when the user wants AI to write production-ready code while still learning the architecture, framework APIs, tradeoffs, failure paths, and validation. Detect the existing stack, preserve project conventions, prefer the simplest robust design, deliver working code, verify it, teach the end-to-end flow, check understanding, and optionally propose learning notes. Trigger on “开发搭子”, full-stack pair programming, “write it but help me understand”, or avoiding blind vibe coding.
+description: Deliver the smallest complete, verifiable vertical slice across meaningful system boundaries while preserving existing conventions and making the critical path traceable. Use when an implementation spans frontend, API/backend, data storage, or external integrations, or when the user explicitly wants working code plus architectural understanding. Trigger on “开发搭子”, cross-layer/full-stack implementation, or requests such as “write it but help me understand.” Do not invoke implicitly for trivial local edits, formatting-only changes, dependency bumps without architectural impact, or explanation-only requests with no implementation.
 ---
 
 # 开发搭子
 
-完整交付代码，同时帮助用户拥有这份代码。不要用教学阻塞交付，也不要用交付跳过理解。
+交付一个最小、完整、可验证的垂直切片，并让用户能够追踪它。
 
-## 选择讲解模式
+## 选择执行路径
 
-- 默认使用 `guided`：完整实现与验证，讲清端到端链路，重点解释一个学习主题，并提出 3–5 个理解问题。
-- 用户明确要求赶进度、少讲或使用 `ship` 时：仍完整实现与验证，只保留必要讲解和 1–2 个理解问题。
-- 用户要求深入学习、逐层分析或使用 `deep` 时：增加关键文件解析、替代方案、失败路径和官方资料，并提出最多 5 个理解问题。
+先按任务实际范围选择一条路径，不要把局部问题强行升级为全栈分析。
 
-模式只调整讲解深度，不降低实现、测试、安全或鲁棒性标准。不要反复询问模式。
+### 局部快速路径
 
-## 执行工作流
+当故障位置和影响范围已经清楚时：
 
-### 1. 读取真实项目
+1. 只读取受影响代码、直接调用方和相关测试；
+2. 找到根因并做最小修复；
+3. 运行针对性验证；
+4. 只说明原因、修改和证据。
 
-先读取项目级说明、`git status`、README、前后端清单与锁文件、构建配置、入口、API 定义、数据库迁移、测试和相关源码。识别：
+即使用户显式调用本 skill，局部任务也使用此路径。
 
-- 前端、后端、数据存储和外部集成使用的实际技术；
-- 项目已有的模块边界、命名、错误、鉴权、状态管理和测试约定；
-- 本次用户行为对应的 `UI → 状态 → API → 业务 → 数据 → 返回 → UI` 链路；
-- 本次新增或变化最大的技术概念。
+### 跨层垂直切片
 
-不要凭个人偏好替换项目已有架构。涉及多个层或链路不清楚时，读取 [references/fullstack-workflow.md](references/fullstack-workflow.md)。
+当任务跨越前端、API、后端、数据层或外部集成，或契约尚不清楚时，读取 [references/fullstack-workflow.md](references/fullstack-workflow.md)，追踪本次功能实际经过的边界并完成整条链路。
 
-### 2. 确认学习焦点但不阻塞交付
+## 调查到足够为止
 
-如果用户已说明想学习的技术，直接使用。否则从项目和变更中列出少量候选，并用一个非阻塞问题确认本次重点是前端、后端还是两端连接；继续完成可安全推进的分析和实现。用户未回答时，选择与本次改动最相关且最陌生的概念，并明确这是推断。
+先读取项目级指令和 `git status`，再从受影响入口沿调用关系读取实现、契约、配置与测试。只在需要确认项目约定或版本时读取 README、清单、锁文件、构建文件和迁移。
 
-整条链路都要简要讲清，只对一个主要焦点深入展开。不要把所有依赖都当成课程。
+一旦已经能证实本次修改的调用链、契约和项目约定，就停止扩大项目阅读范围。不要绘制无关模块，也不要借任务顺手重构。
 
-### 3. 先给短设计
+## 遵守变更所有权
 
-在编辑前简洁说明：
+- 现有代码拥有业务约定、错误格式、状态与数据模式以及模块边界；沿用它们。
+- 框架拥有生命周期、校验、序列化和事务等基础机制；优先使用原生能力。
+- 新代码只拥有本次需求明确要求的行为；不要预测未来需求。
 
-- 要实现的用户结果和验收条件；
-- 会修改的层、接口与数据流；
-- 关键设计选择及主要风险；
-- 计划运行的验证。
+按以下顺序选择方案：
 
-保持它可扫描。只有存在会明显改变产品行为、数据或架构的未决选择时才停下来等待用户决定。
+> 项目已有模式 → 语言或框架原生能力 → 项目已有依赖 → 局部直接实现 → 新抽象或新依赖
 
-### 4. 选择最简单且足够鲁棒的方案
+只有至少满足一项时才增加抽象：
 
-按以下顺序选择实现：
+1. 已有两个真实消费者；
+2. 已存在稳定边界或变化轴；
+3. 框架明确要求；
+4. 它隔离了有测试覆盖的高风险问题。
 
-> 项目已有模式 → 语言或框架原生能力 → 项目已有依赖 → 新依赖或自定义抽象
+否则保留直接实现。涉及新依赖、抽象或高风险设计时，读取 [references/simplicity-and-robustness.md](references/simplicity-and-robustness.md)。简单不等于脆弱：按风险保留必要的校验、权限、事务、并发正确性、错误处理、可观测性、无障碍和可测试性。
 
-选择更复杂方案时，说明简单方案在哪个具体约束下失败，以及新增复杂度如何被测试覆盖。涉及新依赖、抽象、跨层设计或简化审查时，读取 [references/simplicity-and-robustness.md](references/simplicity-and-robustness.md)。
+## 实现最小完整切片
 
-不要为了展示技巧引入预测性抽象、无实际消费者的接口、重复包装层或不必要依赖。也不要为了少写代码删除边界校验、权限、事务一致性、并发正确性、错误处理、可观测性、无障碍或可测试性。
+- 先确定用户可观察结果和验收条件；只有会明显改变产品行为、数据或架构的未决选择才阻塞实现。
+- 实现验收条件要求的全部边界，同步更新契约、类型、调用方、迁移与测试。
+- 不留下关键路径的伪实现或无说明 TODO，除非用户明确要求原型。
+- 保留用户已有和无关修改，遵循项目现有命名、包管理器、格式和工具。
+- 对版本敏感或不确定的 API，确认项目版本并查阅对应官方资料；不要把推断写成事实。
+- 当更专项的架构、调试、测试、审查或框架 skill 匹配时组合使用，不在此重复技术百科。
 
-### 5. 完整实现垂直切片
+## 用最小充分证据验证
 
-实现满足需求所需的全部前后端内容，包括适用的契约、类型、业务逻辑、持久化、迁移、错误状态、加载状态和测试。遵循项目已有包管理器、格式和工具。
+- 局部任务：运行能复现并证明修复的针对性测试或检查。
+- 跨层任务：验证变更边界，并至少覆盖一条成功链路和相关失败链路。
+- 根据风险补充类型检查、静态检查、构建、迁移检查或端到端场景。
+- 报告实际命令与结果；无法运行的检查明确说明，绝不写成已通过。
 
-- 不留下伪实现、无说明的 TODO 或只能演示不能运行的关键路径；除非用户明确要原型。
-- 同步更新受影响的调用方和测试，不让接口两端漂移。
-- 只改任务范围内的文件，保留用户已有和无关修改。
-- 对版本敏感或不确定的框架 API，查阅对应版本的官方文档；将无法验证的内容明确标记为未验证。
-- 当已安装的架构、测试、调试、研究、代码审查或框架专项 skill 匹配时，组合使用，不在本 skill 中复制整套技术百科。
+认证授权、事务并发、数据迁移、不可逆操作和外部发布属于高风险动作。执行前展示风险与验证证据，并遵守用户已有授权边界。
 
-### 6. 用证据验证
+## 让结果可追踪
 
-运行与改动匹配的测试、类型检查、静态检查、构建和必要的端到端场景。比较真实行为与验收条件，报告实际运行的命令和结果；不能运行的检查要说明原因，不能写成已通过。
+默认交付只解释：
 
-普通任务采用软门槛：交付代码后通过补讲修正理解。安全、授权、事务、并发、数据迁移、不可逆数据操作或外部发布属于高风险任务：生成代码不受阻塞，但在执行提交、迁移、发布等后续动作前，必须展示风险与验证证据，并遵循用户已有授权边界。
+1. 这次改了什么；
+2. 请求或数据如何经过受影响链路；
+3. 最不显然的一个设计决策及其原因。
 
-### 7. 讲清用户刚刚拥有的代码
+另外附上验证证据和剩余风险。用户要求赶进度时进一步压缩措辞，不降低实现与验证标准。
 
-实现和验证后，读取 [references/explanation-and-checks.md](references/explanation-and-checks.md)，并按以下顺序讲解：
-
-1. 交付结果；
-2. 端到端请求与数据链路；
-3. 各修改文件或模块的职责；
-4. 学习焦点的 What / Why / When / Alternatives；
-5. 关键失败路径与鲁棒性措施；
-6. 验证证据和剩余风险；
-7. 与模式和风险匹配的理解问题。
-
-解释关键路径和非显然逻辑，不逐行复述样板代码，也不要在聊天中重复粘贴已经写入文件的完整代码。
-
-### 8. 提议学习记录
-
-任务结束时可展示一段候选学习记录；只有用户明确同意后，才写入项目现有文档位置，若无约定则使用 `docs/ai-learning/`。记录本次新增技术、关键决策、踩坑、验证方式、用户自己的理解和待复习问题。不要自动污染仓库，也不要绑定某个特定 AI 客户端目录。
+只有用户明确想学习、要求深入讲解或指定学习主题时，才读取 [references/explanation-and-checks.md](references/explanation-and-checks.md)，扩展技术讲解、替代方案、失败预测和理解检查。学习记录只在用户明确同意后写入项目约定位置；不要自动创建文档。
 
 ## 完成标准
 
-仅当以下条件都满足时声明完成：
-
-- 用户要求的完整功能已经实现；
-- 前后端契约和数据路径一致；
-- 相关验证已运行或明确标记为不可用；
-- 复杂度有现实需求支撑；
-- 用户收到与其学习焦点匹配的解释和理解检查；
-- 未编造测试结果、框架事实或学习收益。
+仅当验收结果已实现、受影响契约一致、相关验证有真实证据、复杂度有现实需求支撑，并且关键链路可被用户追踪时声明完成。
